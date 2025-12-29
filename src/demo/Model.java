@@ -15,7 +15,7 @@ public class Model {
     public static final int HEIGHT = 15;
     
     // direction 
-    private static final int UP 		= -1;
+    private static final int UP 	= -1;
     private static final int DOWN 	= 1;
     private static final int LEFT 	= -1;
     private static final int RIGHT	= 1;
@@ -34,10 +34,10 @@ public class Model {
     private static final int []VerticalDirection = {LEFT, CENTER, RIGHT, RIGHT, RIGHT, CENTER, LEFT, LEFT}; 
 
     // game state
-    private static final int ONGOING     = 0;
-    private static final int BLACKWIN    = 1;
-    private static final int WHITEWIN    = 2;
-    private static final int DRAW        = 3;
+    public static final int ONGOING     = 0;
+    public static final int BLACKWIN    = 1;
+    public static final int WHITEWIN    = 2;
+    public static final int DRAW        = 3;
     
     private int[][] ChessBoard = new int[WIDTH][HEIGHT];
     // BLACK starts first
@@ -62,6 +62,14 @@ public class Model {
     }
 
     public void setPosition(int x, int y, int color){
+        if(gameState != ONGOING) {
+        	System.out.println("Game is already over. Cannot place more pieces.");
+        	return;
+        }
+        if(ChessBoard[x][y] == BLACK || ChessBoard[x][y] == WHITE) {
+        	System.out.println("Position already occupied. Choose another position.");
+        	return;
+        }
         if(color == BLACK || color == WHITE){
         	ChessBoard[x][y] = color;
             boolean gameOver = GameOver(x, y);
@@ -71,7 +79,6 @@ public class Model {
             	} else {
             		gameState = WHITEWIN;
             	}
-                Vars.control_.endGame(gameState);
             } else {
             	// Switch turn
             	if(currentTurn == BLACK) {

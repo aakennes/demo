@@ -7,6 +7,12 @@ package demo;
 import javax.swing.*;
 
 public class Control {
+    public static final int SINGLE = 1;
+	public static final int NET = 2;
+
+    public Control() {
+        
+    }
     public void startGame() {
         // Start Game logic : NorthPanel.StartButton.ActionListener -> Model.resetGame 
         // -> ChessPanel.repaint
@@ -36,5 +42,17 @@ public class Control {
         // TODO: add exit game logic
         System.out.println("Exiting game");
         
+    }
+    public void putChess(int x, int y) {
+        // Put chess logic : ChessPanel.mousePressed -> Control.putChess -> Model.setPosition
+        if(Vars.model_.getGameState() != Model.ONGOING && Vars.model_.getGameState() != Model.DRAW){
+            return;
+        }
+        System.out.println("Putting chess at: (" + x + ", " + y + ")");
+        Vars.model_.setPosition(x, y, Vars.model_.getCurrentTurn());
+        Vars.chess_panel_.repaint();
+        if(Vars.model_.getGameState() != Model.ONGOING && Vars.model_.getGameState() != Model.DRAW) {
+        	Vars.control_.endGame(Vars.model_.getGameState());
+        }
     }
 }

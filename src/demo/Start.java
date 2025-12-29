@@ -9,7 +9,7 @@ public class Start {
 		ChessFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		ChessFrame.getContentPane().add(Vars.north_panel_, BorderLayout.NORTH);
 		ChessFrame.getContentPane().add(Vars.chess_panel_, BorderLayout.CENTER);
-		ChessFrame.setSize(800, 600);
+		ChessFrame.setSize(800, 1000);
 		ChessFrame.setVisible(true);
     }
 }
