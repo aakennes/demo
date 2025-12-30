@@ -1,4 +1,4 @@
-package demo;
+package demo.Chess;
 
 /*
  * Model class to manage the game state and logic.

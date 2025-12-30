@@ -1,4 +1,4 @@
-package demo;
+package demo.Chess;
 
 /*
  * ChessPanel class to manage the chess panel of the GUI.
@@ -25,7 +25,7 @@ public class ChessPanel extends JPanel {
                 System.out.println("Mouse pressed at: (" + x + ", " + y + ")");
                 int row = (y - sy + gridSize / 2) / gridSize;
                 int col = (x - sx + gridSize / 2) / gridSize;
-                Vars.control_.putChess(col, row);
+                ChessFrame.control_.putChess(col, row);
             }
         });
     }
@@ -54,7 +54,7 @@ public class ChessPanel extends JPanel {
         System.out.println("Painting pieces");
         for (int i = 0; i < Model.WIDTH; i++) {
             for (int j = 0; j < Model.HEIGHT; j++) {
-                int pieceColor = Vars.model_.getPosition(i, j);
+                int pieceColor = ChessFrame.model_.getPosition(i, j);
                 if (pieceColor == Model.BLACK) {
                     g.setColor(Color.BLACK);
                     g.fillOval(sx + i * gridSize - gridSize / 2, sy + j * gridSize - gridSize / 2, gridSize, gridSize);
