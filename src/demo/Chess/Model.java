@@ -96,7 +96,7 @@ public class Model {
     
     
     public boolean IsPositionInBoard(int x, int y) {
-    	if(x < 0 || x > WIDTH || y < 0 || y > HEIGHT) {
+    	if(x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
     		return false;
     	}
     	return true;

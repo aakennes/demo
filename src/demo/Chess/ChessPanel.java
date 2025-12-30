@@ -43,9 +43,9 @@ public class ChessPanel extends JPanel {
     private void paintGrid(Graphics g) {
         // Paint grid logic
         System.out.println("Painting grid");
-        for (int i = 0; i <= Model.WIDTH; i++) {
-            g.drawLine(sx, sy + i * gridSize, sx + Model.WIDTH * gridSize, sy + i * gridSize);
-            g.drawLine(sx + i * gridSize, sy, sx + i * gridSize, sy + Model.HEIGHT * gridSize);
+        for (int i = 0; i < Model.WIDTH; i++) {
+            g.drawLine(sx, sy + i * gridSize, sx + (Model.WIDTH - 1) * gridSize, sy + i * gridSize);
+            g.drawLine(sx + i * gridSize, sy, sx + i * gridSize, sy + (Model.HEIGHT - 1) * gridSize);
         }
     }
 
