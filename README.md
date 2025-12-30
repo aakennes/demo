@@ -5,10 +5,10 @@ TODO: Add more description
 TODOList:
 
  1. Add StartPanel as start panel:
-  (√) 1.1 Press "Exit" will return to StartPanel
+  1.1 Press "Exit" will return to StartPanel (√)
   1.2 StartPanel can display if a ip table is empty or full
-  1.3 StartPanel can change the profile color/name with SettingPanel
+  1.3 StartPanel can change the profile color/name with SettingPanel (√)
  2. Beautify NorthPanel: Add profile color and grade/rank
  3. Finish Net.java
- 4. Add MySQL with attribute 
+ 4. Add MySQL with attribute -> changed to read/write .csv (√)
 

@@ -34,15 +34,18 @@ public class Model {
     private static final int []VerticalDirection = {LEFT, CENTER, RIGHT, RIGHT, RIGHT, CENTER, LEFT, LEFT}; 
 
     // game state
-    public static final int ONGOING     = 0;
-    public static final int BLACKWIN    = 1;
-    public static final int WHITEWIN    = 2;
-    public static final int DRAW        = 3;
+    public static final int ONGOING      = 0;
+    public static final int BLACKWIN     = 1;
+    public static final int WHITEWIN     = 2;
+    public static final int DRAW         = 3;
+    public static final int ABNORMALEXIT = 4;
     
     private int[][] ChessBoard = new int[WIDTH][HEIGHT];
     // BLACK starts first
     private int currentTurn = BLACK; 
     private int gameState = DRAW; 
+
+    
     
 
     Model(){
@@ -53,8 +56,8 @@ public class Model {
             }
         }
         // Test setup
-        ChessBoard[7][7] = BLACK;
-        ChessBoard[7][8] = WHITE;
+        // ChessBoard[7][7] = BLACK;
+        // ChessBoard[7][8] = WHITE;
     }
 
     public int getPosition(int x, int y){
@@ -147,4 +150,5 @@ public class Model {
         currentTurn = BLACK;
         gameState = ONGOING;
     }
+
 }

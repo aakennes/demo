@@ -9,7 +9,9 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import demo.Chess.ChessControl;
 import demo.Chess.ChessFrame;
+import demo.StartFrame.SettingsFrame;
 import demo.Start;
 import static demo.Apps.ColorDefine.*;
 
@@ -61,6 +63,8 @@ public class StartPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Single Player Start button clicked");
+                ChessFrame.control_.setGameMode(0);
+                ChessFrame.control_.setRoomIP(SettingsFrame.settings_panel_.getDefaultIP());
                 ChessFrame.control_.startGame();
                 // Start.start_frame_.hideFrame();
                 Start.chess_frame_.showFrame();
@@ -92,6 +96,7 @@ public class StartPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("History button clicked");
+                Start.history_frame_.showFrame();
             }
         });
 

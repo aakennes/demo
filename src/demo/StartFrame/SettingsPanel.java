@@ -10,6 +10,7 @@ import javax.swing.*;
 import demo.Start;
 import demo.Chess.ChessFrame;
 
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -17,6 +18,7 @@ import java.nio.file.*;
 
 
 import static demo.Apps.ColorDefine.*;
+import static demo.Apps.StringEscape.*;
 
 public class SettingsPanel extends JPanel{
     private static final int LABEL_WIDTH    = 150;
@@ -25,6 +27,10 @@ public class SettingsPanel extends JPanel{
     // private static final int BUTTON_HEIGHT  = 40;
     private static final int FONT_SIZE      = 20;
     private static final int HEIGHT         = 40;
+
+    private static int profileColor = 0;
+    private static String localIP = "127.0.0.1";
+    private static String userName = "Li Hua";
     
 
     JLabel TitleLabel = new JLabel("Settings");
@@ -130,7 +136,7 @@ public class SettingsPanel extends JPanel{
 
                 Path path = Paths.get("data", "settings.csv");
                 try {
-                    if (path.getParent() != null) Files.createDirectories(path.getParent());
+                    // if (path.getParent() != null) Files.createDirectories(path.getParent());
                     try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                         bw.write("profile_color,username,default_ip");
                         bw.newLine();
@@ -163,36 +169,40 @@ public class SettingsPanel extends JPanel{
         this.add(ButtonPanel);
     }
 
-    private static String escapeCsv(String s) {
-        // Add "" and escape if necessary
-        if (s == null) return "";
-        String escaped = s.replace("\"", "\"\"");
-        return "\"" + escaped + "\"";
-    }
-    
-    // Unescape a CSV field produced by escapeCsv
-    public static String unescapeCsvField(String s) {
-        if (s == null) return "";
-        String t = s.trim();
-        if (t.length() >= 2 && t.startsWith("\"") && t.endsWith("\"")) {
-            t = t.substring(1, t.length() - 1);
-        }
-        return t.replace("\"\"", "\"");
-    }
+
     
     // Public setters so external code can populate the panel
     public void setProfileColor(String color) {
         if (color == null) return;
+        profileColor = colorStrToNo(color);
         ProfileColorComboBox.setSelectedItem(color);
     }
     
-    public void setUsername(String username) {
-        if (username == null) return;
-        UsernameTextField.setText(username);
+    public void setUsername(String name_) {
+        if (name_ == null) return;
+        userName = name_;
+        UsernameTextField.setText(name_);
     }
     
-    public void setDefaultIP(String ip) {
-        if (ip == null) return;
-        DefaultIPTextField.setText(ip);
+    public void setDefaultIP(String ip_) {
+        if (ip_ == null) return;
+        localIP = ip_;
+        DefaultIPTextField.setText(ip_);
+    }
+    
+    public int getProfileColorNo() {
+        return profileColor;
+    }
+
+    public String getProfileColorStr() {
+        return colorNoToStr(profileColor);
+    }
+    
+    public String getUsername() {
+        return userName;
+    }
+    
+    public String getDefaultIP() {
+        return localIP;
     }
 }
