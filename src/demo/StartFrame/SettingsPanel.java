@@ -13,6 +13,7 @@ import demo.Chess.ChessFrame;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.*;
 
 
 import static demo.Apps.ColorDefine.*;
@@ -121,8 +122,26 @@ public class SettingsPanel extends JPanel{
         ComfirmButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // TODO: you can replace csv by any SQL
                 System.out.println("Comfirm button clicked");
-                // TODO : write in data/settings.csv
+                String color = (String) ProfileColorComboBox.getSelectedItem();
+                String username = UsernameTextField.getText().trim();
+                String ip = DefaultIPTextField.getText().trim();
+
+                Path path = Paths.get("data", "settings.csv");
+                try {
+                    if (path.getParent() != null) Files.createDirectories(path.getParent());
+                    try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                        bw.write("profile_color,username,default_ip");
+                        bw.newLine();
+                        bw.write(escapeCsv(color) + "," + escapeCsv(username) + "," + escapeCsv(ip));
+                        bw.newLine();
+                    }
+                    JOptionPane.showMessageDialog(SettingsPanel.this, "Settings saved.", "Saved", JOptionPane.INFORMATION_MESSAGE);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
                 Start.settings_frame_.hideFrame();
                 // Start.start_frame_.showFrame();
             }
@@ -142,5 +161,38 @@ public class SettingsPanel extends JPanel{
         ButtonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         ButtonPanel.add(CancelButton);
         this.add(ButtonPanel);
+    }
+
+    private static String escapeCsv(String s) {
+        // Add "" and escape if necessary
+        if (s == null) return "";
+        String escaped = s.replace("\"", "\"\"");
+        return "\"" + escaped + "\"";
+    }
+    
+    // Unescape a CSV field produced by escapeCsv
+    public static String unescapeCsvField(String s) {
+        if (s == null) return "";
+        String t = s.trim();
+        if (t.length() >= 2 && t.startsWith("\"") && t.endsWith("\"")) {
+            t = t.substring(1, t.length() - 1);
+        }
+        return t.replace("\"\"", "\"");
+    }
+    
+    // Public setters so external code can populate the panel
+    public void setProfileColor(String color) {
+        if (color == null) return;
+        ProfileColorComboBox.setSelectedItem(color);
+    }
+    
+    public void setUsername(String username) {
+        if (username == null) return;
+        UsernameTextField.setText(username);
+    }
+    
+    public void setDefaultIP(String ip) {
+        if (ip == null) return;
+        DefaultIPTextField.setText(ip);
     }
 }
