@@ -89,7 +89,7 @@ public class ChessControl {
             try (BufferedWriter bw = Files.newBufferedWriter(historyCsvPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE)) {
                 // GameMode,RoomIP,OpponentName,MyColor,WinColor,Time
                 
-                bw.write(getGameModeStr() + "," + SettingsFrame.settings_panel_.getDefaultIP() + "," + escapeCsv("") + "," + "Black" + "," + escapeCsv("")  + "," + Instant.now());
+                bw.write(getGameModeStr() + "," + SettingsFrame.settings_panel_.getDefaultIP() + "," + escapeCsv("") + "," + "Black" + "," + escapeCsv("Unfinished")  + "," + Instant.now());
                 bw.newLine();
             } catch (IOException e) {
                 e.printStackTrace();

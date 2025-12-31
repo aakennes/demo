@@ -1,1 +1,8 @@
-data/*.csv
+.project
+.classpath
+.settings/
+*.class
+bin/
+*.log
+*.tmp
+data/*.local.csv
