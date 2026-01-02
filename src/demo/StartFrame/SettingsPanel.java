@@ -36,7 +36,7 @@ public class SettingsPanel extends JPanel{
     JLabel TitleLabel = new JLabel("Settings");
     JLabel ProfileColorLabel = new JLabel("Profilecolor:");
     JLabel UsernameLabel = new JLabel("Username:");
-    JLabel DefaultIPLabel = new JLabel("DefaultIP:");
+    JLabel DefaultIPLabel = new JLabel("DefaultPort:");
 
     JPanel ProfileColorPanel = new JPanel();
     JPanel UsernamePanel    = new JPanel();

@@ -68,7 +68,7 @@ public class StartPanel extends JPanel{
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Single Player Start button clicked");
                 ChessFrame.control_.setGameMode(0);
-                ChessFrame.control_.setRoomIP(SettingsFrame.settings_panel_.getDefaultIP());
+                // ChessFrame.control_.setRoomIP(SettingsFrame.settings_panel_.getDefaultIP());
                 ChessFrame.control_.startGame();
                 // Start.start_frame_.hideFrame();
                 Start.chess_frame_.showFrame();

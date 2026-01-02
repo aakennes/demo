@@ -35,7 +35,7 @@ public class ChessControl {
     private static String RoomIP;
 
     public ChessControl() {
-        // RoomIP = "127.0.0.1";
+        
     }
     public void startGame() {
         // Start Game logic : NorthPanel.StartButton.ActionListener -> Model.resetGame 
@@ -123,12 +123,12 @@ public class ChessControl {
         gameMode = mode_;
     }
 
-    public String getRoomIP(){
-        return RoomIP;
-    }
+    // public String getRoomIP(){
+    //     return RoomIP;
+    // }
 
-    public void setRoomIP(String ip_){
-        RoomIP = ip_;
-    }
+    // public void setRoomIP(String ip_){
+    //     RoomIP = ip_;
+    // }
 
 }

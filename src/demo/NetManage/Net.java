@@ -52,7 +52,7 @@ public class Net {
 
 	public void startServer(int port) throws IOException {
 		if (serverRunning) return;
-		System.out.println("start server.");
+		System.out.println("Net.java:start server.");
 		server_socket_ = new ServerSocket(port);
 		serverRunning = true;
 		executor.execute(() -> {
@@ -110,6 +110,7 @@ public class Net {
 
 	public Connection connect(String host, int port) throws IOException {
 		Socket client_socket_ = new Socket(host, port);
+		// System.out.println("Net.java: connect to server " + host + ":" + port);
 		// check immediate server response for rejection
 		BufferedReader preReader = new BufferedReader(new InputStreamReader(client_socket_.getInputStream(), "UTF-8"));
 		try {
@@ -137,6 +138,7 @@ public class Net {
 		Connection newConnection = new Connection(this, client_socket_);
 		connections.add(newConnection);
 		newConnection.startConnect();
+		// System.out.println("Net.java: connect to server " + host + ":" + port);
 		listener_.onConnected(newConnection);
 		return newConnection;
 	}

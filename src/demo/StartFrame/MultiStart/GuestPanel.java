@@ -3,6 +3,8 @@ package demo.StartFrame.MultiStart;
 import javax.swing.*;
 
 import demo.Start;
+import demo.Chess.ChessControl;
+import demo.Chess.ChessFrame;
 import demo.NetManage.Connection;
 import demo.NetManage.Message;
 import demo.NetManage.Net;
@@ -129,6 +131,7 @@ public class GuestPanel extends JPanel {
 	}
 
 	private void handleJoinRoom() {
+        System.out.println("handleJoin");
 		if (connecting.get()) {
 			return;
 		}
@@ -164,7 +167,6 @@ public class GuestPanel extends JPanel {
 				Connection conn = Start.net_.connect(hostIp, port);
 				activeConnection = conn;
 				Start.net_.send(conn, Protocol.buildJoin(userName, pwd));
-				updateStatus("Join request sent. Waiting for host response...");
 			} catch (IOException ex) {
 				handleConnectionFailure(ex.getMessage());
 			}
@@ -189,7 +191,7 @@ public class GuestPanel extends JPanel {
 		connecting.set(false);
 		connectButton.setEnabled(true);
 		Start.net_.setMessageListener(null);
-		updateStatus("Idle");
+		updateStatus("Confirm to join a room.");
 		MultiStartMenu.guest_dialog_.setVisible(false);
 	}
 
@@ -202,16 +204,17 @@ public class GuestPanel extends JPanel {
 	}
 
 	private class GuestMessageListener implements Net.MessageListener {
-		private final String nickname;
+		private final String username;
 		private final String password;
 
-		GuestMessageListener(String nickname, String password) {
-			this.nickname = nickname;
+		GuestMessageListener(String username, String password) {
+			this.username = username;
 			this.password = password;
 		}
 
 		@Override
 		public void onConnected(Connection conn) {
+            System.out.println("guest onConnected");
 			updateStatus("Connected. Sending join info...");
 		}
 
@@ -241,7 +244,7 @@ public class GuestPanel extends JPanel {
 			updateStatus("Guest joined. Launching game...");
 			SwingUtilities.invokeLater(() -> {
 				MultiStartMenu.guest_dialog_.setVisible(false);
-				// TODO: swap to chess frame and begin multiplayer session
+				launchChessGame(hostIpField.getText().trim());
 			});
 		}
 
@@ -273,5 +276,14 @@ public class GuestPanel extends JPanel {
 		public void onError(Connection conn, Exception ex) {
 			handleConnectionFailure(ex == null ? "Network error" : ex.getMessage());
 		}
+	}
+
+	private void launchChessGame(String roomIp) {
+		String resolvedIp = roomIp;
+        System.out.println("launchChessGame");
+		ChessFrame.control_.setGameMode(ChessControl.DUO);
+		// ChessFrame.control_.setRoomIP(resolvedIp);
+		ChessFrame.control_.startGame();
+		Start.chess_frame_.showFrame();
 	}
 }

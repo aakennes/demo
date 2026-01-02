@@ -10,6 +10,8 @@ TODOList:
   * StartPanel can change the profile color/name with HistoryPanel (√)
   * Beautify SettingPanel (√)
  2. Beautify NorthPanel: Add profile color and grade/rank
- 3. Finish Net.java
+ 3. Finish Net.java 
+  * launch host and guest both (√)
+  * sync chessboard
  4. Add MySQL with attribute -> changed to read/write .csv (√)
- 5. Use block mode: turn some JFrame into JDialog
+ 

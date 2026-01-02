@@ -3,6 +3,8 @@ package demo.StartFrame.MultiStart;
 import javax.swing.*;
 
 import demo.Start;
+import demo.Chess.ChessControl;
+import demo.Chess.ChessFrame;
 import demo.NetManage.Connection;
 import demo.NetManage.Message;
 import demo.NetManage.Net;
@@ -215,6 +217,7 @@ public class HostPanel extends JPanel{
 
     private void handleJoin(Connection conn, Message msg) {
         String incomingPassword = msg.get(Protocol.K_PASSWORD);
+        System.out.println("handleJoin");
         if (!Objects.equals(roomPassword, incomingPassword)) {
             Start.net_.send(conn, Protocol.buildReject("WRONG_PASSWORD"));
             conn.closeConnect();
@@ -226,15 +229,24 @@ public class HostPanel extends JPanel{
         updateStatus("Guest joined! Launching game...");
         SwingUtilities.invokeLater(() -> {
             MultiStartMenu.host_dialog_.setVisible(false);
-            // TODO: integrate with ChessControl for multiplayer start
+            launchChessGame(IPTextField.getText().trim());
         });
+    }
+
+    private void launchChessGame(String roomIp) {
+        String resolvedIp =  roomIp;
+        // System.out.println("launchChessGame");
+        ChessFrame.control_.setGameMode(ChessControl.DUO);
+        // ChessFrame.control_.setRoomIP(resolvedIp);
+        ChessFrame.control_.startGame();
+        Start.chess_frame_.showFrame();
     }
 
     private class HostMessageListener implements Net.MessageListener {
         @Override
         public void onConnected(Connection conn) {
             activeConnection = conn;
-            updateStatus("Opponent connected from " + conn.getRemoteAddress() + ". Waiting for join info...");
+            updateStatus("Opponent connected from " + conn.getRemoteAddress() + ". Waiting ...");
         }
 
         @Override

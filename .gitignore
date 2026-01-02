@@ -4,6 +4,8 @@
 .vscode/
 *.class
 bin/
+bin-*/
+bin/demo/
 *.log
 *.tmp
 data/*.local.csv

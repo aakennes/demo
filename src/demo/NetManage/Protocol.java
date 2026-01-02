@@ -4,9 +4,9 @@ package demo.NetManage;
  * Lightweight text protocol for handshake and messages.
 */
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import static demo.Apps.ColorDefine.*;
+import static demo.Apps.StringEscape.*;
 
 public final class Protocol {
     // message types
@@ -97,7 +97,7 @@ public final class Protocol {
 		for (Map.Entry<String, String> e : pairs.entrySet()) {
 			if (!first) sb.append(';');
 			first = false;
-			sb.append(escape(e.getKey())).append('=').append(escape(e.getValue()));
+			sb.append(escapeCsv(e.getKey())).append('=').append(escapeCsv(e.getValue()));
 		}
 		return sb.toString();
 	}
@@ -120,28 +120,22 @@ public final class Protocol {
 			if (c == '\\') { escape = true; continue; }
 			if (cur.equals("key") && c == '=') { cur = "val"; continue; }
 			if (cur.equals("val") && c == ';') {
-				m.put(key.toString(), val.toString());
+				putParsedPair(m, key, val);
 				key.setLength(0); val.setLength(0); cur = "key"; continue;
 			}
 			if (cur.equals("key")) key.append(c); else val.append(c);
 		}
-		if (key.length() > 0) {
-			m.put(key.toString(), val.toString());
+		if (key.length() > 0 || val.length() > 0) {
+			putParsedPair(m, key, val);
 		}
 		String type = m.getOrDefault(K_TYPE, "");
 		return new Message(type, m);
 	}
 
-	private static String escape(String s) {
-		if (s == null) return "";
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < s.length(); ++i) {
-			char c = s.charAt(i);
-			if (c == '\\' || c == ';' || c == '=' ) {
-				sb.append('\\');
-			}
-			sb.append(c);
-		}
-		return sb.toString();
+	private static void putParsedPair(Map<String, String> map, StringBuilder rawKey, StringBuilder rawVal) {
+		String cleanKey = unescapeCsvField(rawKey.toString());
+		String cleanVal = unescapeCsvField(rawVal.toString());
+		map.put(cleanKey, cleanVal);
 	}
+
 }
