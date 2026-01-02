@@ -17,7 +17,7 @@ public class MultiStartMenu extends JPopupMenu{
     JMenuItem GuestModeButton;
 
     public static HostDialog host_dialog_;
-    JDialog GuestDialog;
+    public static GuestFrame guest_dialog_;
     public MultiStartMenu(){
         HostModeButton = new JMenuItem("Create Room");
         GuestModeButton = new JMenuItem("Join Room");
@@ -26,7 +26,7 @@ public class MultiStartMenu extends JPopupMenu{
         this.add(HostModeButton);
         this.add(GuestModeButton);
         host_dialog_ = new HostDialog(Start.start_frame_, "Create Room", true);
-        GuestDialog = new JDialog(Start.start_frame_, "Join Room", true);
+        guest_dialog_ = new GuestFrame(Start.start_frame_, "Join Room", true);
         ButtonActionSetting();
     }
 
@@ -43,7 +43,7 @@ public class MultiStartMenu extends JPopupMenu{
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Guest Game Mode Start button clicked");
-                GuestDialog.setVisible(true);
+                guest_dialog_.setVisible(true);
             }
         });
     }

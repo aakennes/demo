@@ -3,15 +3,19 @@ package demo.StartFrame.MultiStart;
 import javax.swing.*;
 
 import demo.Start;
-import demo.StartFrame.SettingsPanel;
+import demo.NetManage.Connection;
+import demo.NetManage.Message;
+import demo.NetManage.Net;
+import demo.NetManage.Protocol;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.net.*;
 import java.io.*;
-import java.nio.file.*;
+import java.util.*;
+import javax.swing.*;
 
 import static demo.Apps.ColorDefine.*;
-import static demo.Apps.StringEscape.*;
 
 public class HostPanel extends JPanel{
     private static final int LABEL_WIDTH    = 150;
@@ -36,22 +40,41 @@ public class HostPanel extends JPanel{
 
     JButton ComfirmButton = new JButton("Comfirm");
     JButton CancelButton  = new JButton("Cancel");
+    JLabel StatusLabel    = new JLabel("Comfirm to host a room.");
+
+    private volatile Connection activeConnection;
+    private volatile boolean hosting = false;
+    private volatile String roomPassword = "";
 
     public HostPanel(){
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.add(Box.createVerticalGlue());
         this.setBackground(FRAME_BACK_COLOR);
 
-        this.add(Box.createRigidArea(new Dimension(0, 30)));
+        this.add(Box.createRigidArea(new Dimension(0, 20)));
         RoomIPSetting();
-        this.add(Box.createRigidArea(new Dimension(0, 60)));
+        this.add(Box.createRigidArea(new Dimension(0, 40)));
         RoomPortSetting();
-        this.add(Box.createRigidArea(new Dimension(0, 60)));
+        this.add(Box.createRigidArea(new Dimension(0, 40)));
         PassWordSetting();
-        this.add(Box.createRigidArea(new Dimension(0, 60))); 
+        this.add(Box.createRigidArea(new Dimension(0, 40))); 
+        StatusLabelSetting();
+        this.add(Box.createRigidArea(new Dimension(0, 40)));
         ButtonSetting();
-        this.add(Box.createRigidArea(new Dimension(0, 60))); 
+        this.add(Box.createRigidArea(new Dimension(0, 20)));
         this.add(Box.createVerticalGlue());
+
+        SettingDefault();
+    }
+
+    private void SettingDefault() {
+        try {
+            String hostIp = InetAddress.getLocalHost().getHostAddress();
+            IPTextField.setText(hostIp);
+        } catch (UnknownHostException e) {
+            IPTextField.setText("127.0.0.1");
+        }
+        PortTextField.setText("34567");
     }
 
     private void RoomIPSetting() {
@@ -96,6 +119,12 @@ public class HostPanel extends JPanel{
         this.add(PassWordPanel);
     }
 
+    private void StatusLabelSetting(){
+        StatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        StatusLabel.setFont(new Font("Consolas", Font.PLAIN, 16));
+        this.add(StatusLabel);
+    }
+
     private void ButtonSetting(){
         ButtonPanel.setLayout(new BoxLayout(ButtonPanel, BoxLayout.X_AXIS));
         // ComfirmButton.setMaximumSize(new Dimension(BUTTON_WIDTH, HEIGHT));
@@ -107,9 +136,8 @@ public class HostPanel extends JPanel{
         ComfirmButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO: connect web
                 System.out.println("Comfirm button clicked");
-                MultiStartMenu.host_dialog_.setVisible(false);
+                handleCreateRoom();
             }
         });
 
@@ -117,6 +145,9 @@ public class HostPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Cancel button clicked");
+                if (hosting) {
+                    stopHosting();
+                }
                 MultiStartMenu.host_dialog_.setVisible(false);
             }
         });
@@ -126,5 +157,111 @@ public class HostPanel extends JPanel{
         ButtonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         ButtonPanel.add(CancelButton);
         this.add(ButtonPanel);
+    }
+
+    
+
+    private void handleCreateRoom() {
+        if (hosting) {
+            return;
+        }
+
+        String portText = PortTextField.getText().trim();
+        int port;
+        if (portText.isEmpty()) {
+            showErrorDialog("Please enter a port number.");
+            return;
+        }
+        try {
+            port = Integer.parseInt(portText);
+        } catch (NumberFormatException ex) {
+            showErrorDialog("Invalid port number.");
+            return;
+        }
+        if (port < 1024 || port > 65535) {
+            showErrorDialog("Port must be between 1024 and 65535.");
+            return;
+        }
+
+        roomPassword = new String(PasswordField.getPassword());
+        Start.net_.setMessageListener(new HostMessageListener());
+        try {
+            Start.net_.startServer(port);
+            hosting = true;
+            ComfirmButton.setEnabled(false);
+            updateStatus("Waiting for opponent to connect...");
+        } catch (IOException ex) {
+            Start.net_.setMessageListener(null);
+            showErrorDialog("Failed to start server: " + ex.getMessage());
+        }
+    }
+
+    private void stopHosting() {
+        Start.net_.stopServer();
+        hosting = false;
+        activeConnection = null;
+        ComfirmButton.setEnabled(true);
+        updateStatus("Server stopped.");
+        Start.net_.setMessageListener(null);
+    }
+
+    private void updateStatus(String text) {
+        SwingUtilities.invokeLater(() -> StatusLabel.setText(text));
+    }
+
+    private void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void handleJoin(Connection conn, Message msg) {
+        String incomingPassword = msg.get(Protocol.K_PASSWORD);
+        if (!Objects.equals(roomPassword, incomingPassword)) {
+            Start.net_.send(conn, Protocol.buildReject("WRONG_PASSWORD"));
+            conn.closeConnect();
+            updateStatus("Rejected opponent: wrong password.");
+            return;
+        }
+
+        Start.net_.send(conn, Protocol.buildJoinAck("GUEST", "WHITE"));
+        updateStatus("Guest joined! Launching game...");
+        SwingUtilities.invokeLater(() -> {
+            MultiStartMenu.host_dialog_.setVisible(false);
+            // TODO: integrate with ChessControl for multiplayer start
+        });
+    }
+
+    private class HostMessageListener implements Net.MessageListener {
+        @Override
+        public void onConnected(Connection conn) {
+            activeConnection = conn;
+            updateStatus("Opponent connected from " + conn.getRemoteAddress() + ". Waiting for join info...");
+        }
+
+        @Override
+        public void onMessage(Connection conn, String message) {
+            Message parsed = Protocol.parse(message);
+            String type = parsed.getType();
+            if (Protocol.T_JOIN.equals(type)) {
+                handleJoin(conn, parsed);
+            } else if (Protocol.T_LEAVE.equals(type)) {
+                updateStatus("Opponent left the room.");
+                conn.closeConnect();
+            }
+        }
+
+        @Override
+        public void onDisconnected(Connection conn) {
+            if (!hosting) return;
+            if (conn == activeConnection) {
+                activeConnection = null;
+            }
+            updateStatus("Opponent disconnected.");
+        }
+
+        @Override
+        public void onError(Connection conn, Exception ex) {
+            if (!hosting) return;
+            updateStatus("Network error: " + (ex == null ? "unknown" : ex.getMessage()));
+        }
     }
 }

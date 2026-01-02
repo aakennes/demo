@@ -25,7 +25,6 @@ public class StartFrame extends JFrame {
     }
 
     public void showFrame() {
-		// TODO : change switch mode
 		this.setVisible(true);
 	}
 

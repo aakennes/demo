@@ -138,7 +138,7 @@ public class SettingsPanel extends JPanel{
                 try {
                     // if (path.getParent() != null) Files.createDirectories(path.getParent());
                     try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-                        bw.write("profile_color,username,default_ip");
+                        bw.write("profile_color,username,default_port");
                         bw.newLine();
                         bw.write(escapeCsv(color) + "," + escapeCsv(username) + "," + escapeCsv(ip));
                         bw.newLine();
