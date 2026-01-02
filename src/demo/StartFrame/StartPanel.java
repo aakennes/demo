@@ -8,10 +8,12 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.plaf.*;
 
 import demo.Chess.ChessControl;
 import demo.Chess.ChessFrame;
 import demo.StartFrame.SettingsFrame;
+import demo.StartFrame.MultiStart.MultiStartMenu;
 import demo.Start;
 import static demo.Apps.ColorDefine.*;
 
@@ -25,6 +27,8 @@ public class StartPanel extends JPanel{
     JButton SettingsButton = new JButton("Settings");
     JButton HistoryButton = new JButton("History");
     JButton ExitButton = new JButton("Exit");
+
+    MultiStartMenu multi_start_menu = new MultiStartMenu();
 
     public StartPanel() {
         // Layout setup
@@ -76,9 +80,12 @@ public class StartPanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Multi Player Start button clicked");
-                ChessFrame.control_.startGame();
+                
                 // Start.start_frame_.hideFrame();
-                Start.chess_frame_.showFrame();
+                // show the popup anchored to the button's local coordinates (below the button)
+                multi_start_menu.show(MultiStartButton, MultiStartButton.getWidth(), 0);
+                // ChessFrame.control_.startGame();
+                // Start.chess_frame_.showFrame();
             }
         });
 
@@ -92,7 +99,6 @@ public class StartPanel extends JPanel{
         });
 
         HistoryButton.addActionListener(new ActionListener() {
-            // TODO: implement history logic
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("History button clicked");
