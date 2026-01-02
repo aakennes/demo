@@ -5,6 +5,7 @@ import javax.swing.*;
 import demo.Start;
 import demo.Chess.ChessControl;
 import demo.Chess.ChessFrame;
+import demo.Chess.Model;
 import demo.NetManage.Connection;
 import demo.NetManage.Message;
 import demo.NetManage.Net;
@@ -135,6 +136,10 @@ public class GuestPanel extends JPanel {
 		if (connecting.get()) {
 			return;
 		}
+			userName = Start.settings_frame_.settings_panel_.getUsername();
+			if (userName == null || userName.trim().isEmpty()) {
+				userName = "Guest";
+			}
 
 		final String hostIp = hostIpField.getText().trim();
 		final String portText = portField.getText().trim();
@@ -223,7 +228,7 @@ public class GuestPanel extends JPanel {
 			Message parsed = Protocol.parse(message);
 			switch (parsed.getType()) {
 				case Protocol.T_JOIN_ACK:
-					onJoinAccepted();
+					onJoinAccepted(parsed);
 					break;
 				case Protocol.T_REJECT:
 					String reason = parsed.get(Protocol.K_REASON);
@@ -237,15 +242,34 @@ public class GuestPanel extends JPanel {
 			}
 		}
 
-		private void onJoinAccepted() {
+		private void onJoinAccepted(Message ack) {
 			connecting.set(false);
 			connectButton.setEnabled(true);
 			Start.net_.setMessageListener(null);
 			updateStatus("Guest joined. Launching game...");
 			SwingUtilities.invokeLater(() -> {
 				MultiStartMenu.guest_dialog_.setVisible(false);
-				launchChessGame(hostIpField.getText().trim());
+				String hostName = ack == null ? "" : ack.get(Protocol.K_PLAYER_ID);
+				int assignedColor = resolveAssignedColor(ack);
+				launchChessGame(activeConnection, hostIpField.getText().trim(), hostName, assignedColor);
 			});
+		}
+
+		private int resolveAssignedColor(Message ack) {
+			if (ack == null) {
+				return Model.WHITE;
+			}
+			String color = ack.get(Protocol.K_COLOR);
+			if (color == null) {
+				return Model.WHITE;
+			}
+			if ("BLACK".equalsIgnoreCase(color)) {
+				return Model.BLACK;
+			}
+			if ("WHITE".equalsIgnoreCase(color)) {
+				return Model.WHITE;
+			}
+			return Model.WHITE;
 		}
 
 		private void onJoinRejected(String reason) {
@@ -278,11 +302,27 @@ public class GuestPanel extends JPanel {
 		}
 	}
 
-	private void launchChessGame(String roomIp) {
+	private void launchChessGame(Connection conn, String roomIp, String opponentName, int assignedColor) {
+		if (conn == null) {
+			showErrorDialog("Connection lost before game start.");
+			return;
+		}
 		String resolvedIp = roomIp;
-        System.out.println("launchChessGame");
+		if (resolvedIp == null || resolvedIp.isEmpty()) {
+			resolvedIp = Start.settings_frame_.settings_panel_.getDefaultIP();
+		}
+		String resolvedOpponent = (opponentName == null || opponentName.isEmpty()) ? resolvedIp : opponentName;
 		ChessFrame.control_.setGameMode(ChessControl.DUO);
-		// ChessFrame.control_.setRoomIP(resolvedIp);
+		ChessFrame.control_.setRoomIP(resolvedIp);
+		ChessFrame.control_.setOpponentName(resolvedOpponent);
+		String localName = (userName == null || userName.isEmpty()) ? "Guest" : userName;
+		ChessFrame.control_.startMultiplayerSession(
+				Start.net_,
+				conn,
+				false,
+				assignedColor,
+				localName,
+				resolvedOpponent);
 		ChessFrame.control_.startGame();
 		Start.chess_frame_.showFrame();
 	}

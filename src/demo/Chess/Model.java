@@ -151,4 +151,45 @@ public class Model {
         gameState = ONGOING;
     }
 
+    public void applyState(int[][] boardState, int currentTurnValue, int gameStateValue) {
+        if (boardState == null) {
+            return;
+        }
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                int value = SPACE;
+                if (x < boardState.length && y < boardState[x].length) {
+                    value = normalizePieceValue(boardState[x][y]);
+                }
+                ChessBoard[x][y] = value;
+            }
+        }
+        if (currentTurnValue == BLACK || currentTurnValue == WHITE) {
+            currentTurn = currentTurnValue;
+        }
+        if (gameStateValue >= ONGOING && gameStateValue <= ABNORMALEXIT) {
+            gameState = gameStateValue;
+        }
+    }
+
+    private int normalizePieceValue(int value) {
+        if (value == BLACK || value == WHITE) {
+            return value;
+        }
+        return SPACE;
+    }
+
+    public String serializeBoard() {
+        StringBuilder sb = new StringBuilder(WIDTH * HEIGHT * 2);
+        for (int y = 0; y < HEIGHT; y++) {
+            for (int x = 0; x < WIDTH; x++) {
+                if (sb.length() > 0) {
+                    sb.append(',');
+                }
+                sb.append(ChessBoard[x][y]);
+            }
+        }
+        return sb.toString();
+    }
+
 }

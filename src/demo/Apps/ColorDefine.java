@@ -14,6 +14,8 @@ public class ColorDefine {
     public static final Color BUTTON_TEXT_COLOR = new Color(240, 255, 254);
     public static final Color FRAME_BACK_COLOR = new Color(250, 250, 250);
     public static final Color TABLE_LINE_COLOR = new Color(245, 250, 255);
+
+    public static final Color WHITE_COLOR = new Color(255, 255, 255);
     
     public static final Color BLUE_COLOR = new Color(51, 255, 255);
     public static final Color GREEN_COLOR = new Color(51, 255, 51);

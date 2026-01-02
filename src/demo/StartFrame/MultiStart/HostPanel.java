@@ -9,6 +9,7 @@ import demo.NetManage.Connection;
 import demo.NetManage.Message;
 import demo.NetManage.Net;
 import demo.NetManage.Protocol;
+import demo.Chess.Model;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -225,20 +226,41 @@ public class HostPanel extends JPanel{
             return;
         }
 
-        Start.net_.send(conn, Protocol.buildJoinAck("GUEST", "WHITE"));
+        String hostName = Start.settings_frame_.settings_panel_.getUsername();
+        Start.net_.send(conn, Protocol.buildJoinAck(hostName, "WHITE"));
         updateStatus("Guest joined! Launching game...");
         SwingUtilities.invokeLater(() -> {
             MultiStartMenu.host_dialog_.setVisible(false);
-            launchChessGame(IPTextField.getText().trim());
+            launchChessGame(conn, msg);
         });
     }
 
-    private void launchChessGame(String roomIp) {
-        String resolvedIp =  roomIp;
-        // System.out.println("launchChessGame");
+    private void launchChessGame(Connection conn, Message joinMessage) {
+        if (conn == null) {
+            showErrorDialog("Connection unavailable. Cannot start game.");
+            return;
+        }
+        String resolvedIp = IPTextField.getText().trim();
+        if (resolvedIp == null || resolvedIp.isEmpty()) {
+            resolvedIp = Start.settings_frame_.settings_panel_.getDefaultIP();
+        }
+        String opponentName = joinMessage == null ? "" : joinMessage.get(Protocol.K_NAME);
+        if (opponentName == null || opponentName.isEmpty()) {
+            opponentName = "Guest";
+        }
+        String hostName = Start.settings_frame_.settings_panel_.getUsername();
         ChessFrame.control_.setGameMode(ChessControl.DUO);
-        // ChessFrame.control_.setRoomIP(resolvedIp);
+        ChessFrame.control_.setRoomIP(resolvedIp);
+        ChessFrame.control_.setOpponentName(opponentName);
+        ChessFrame.control_.startMultiplayerSession(
+                Start.net_,
+                conn,
+                true,
+                Model.BLACK,
+                hostName,
+                opponentName);
         ChessFrame.control_.startGame();
+        ChessFrame.control_.syncBoardState();
         Start.chess_frame_.showFrame();
     }
 
