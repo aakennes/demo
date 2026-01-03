@@ -46,16 +46,10 @@ public class ChessControl {
     private int remoteColor = Model.WHITE;
     private String localPlayerId = "HOST";
     private String remotePlayerId = "GUEST";
+    private volatile boolean restartRequestPending = false;
 
     public ChessControl() {
         
-    }
-    public void startGame() {
-        // Start Game logic : NorthPanel.StartButton.ActionListener -> Model.resetGame 
-        // -> ChessPanel.repaint
-        System.out.println("Game started");
-        ChessFrame.model_.resetGame();
-        ChessFrame.chess_panel_.repaint();
     }
     public void restartGame() {
         // Restart Game logic : NorthPanel.RestartButton.ActionListener -> Model.resetGame 
@@ -63,6 +57,26 @@ public class ChessControl {
         System.out.println("Game restarted");
         ChessFrame.model_.resetGame();
         ChessFrame.chess_panel_.repaint();
+    }
+
+    private void performRestartWithSync() {
+        restartGame();
+        if (multiplayerActive && gameMode == DUO) {
+            sendSyncIfNeeded();
+        }
+    }
+    public void requestRestart() {
+        if (gameMode != DUO || !multiplayerActive || multiplayerNet == null || multiplayerConnection == null) {
+            restartGame();
+            return;
+        }
+        if (restartRequestPending) {
+            JOptionPane.showMessageDialog(null, "Waiting for opponent to respond to the previous restart request.");
+            return;
+        }
+        restartRequestPending = true;
+        multiplayerNet.send(multiplayerConnection, Protocol.buildRestartRequest(localPlayerId));
+        JOptionPane.showMessageDialog(null, "Restart request sent. Awaiting opponent confirmation.");
     }
     public void endGame(int winner) {
         // TODO: need more end game logic to show winner
@@ -75,7 +89,7 @@ public class ChessControl {
 			JOptionPane.showMessageDialog(null, "white win");
 		}
         writeHistoryRecord();
-        notifyRemoteGameEnd();
+        // Keep the link alive so restart/exit buttons decide what happens next.
     }
     public void exitGame() {
         // TODO: add exit game logic
@@ -155,8 +169,10 @@ public class ChessControl {
         isHostSide = hostSide;
         localColor = assignedColor;
         remoteColor = (assignedColor == Model.BLACK) ? Model.WHITE : Model.BLACK;
-        localPlayerId = (localId == null || localId.isEmpty()) ? (hostSide ? "HOST" : "GUEST") : localId;
-        remotePlayerId = (remoteId == null || remoteId.isEmpty()) ? (hostSide ? "GUEST" : "HOST") : remoteId;
+        String tempName1 = hostSide ? "HOST" : "GUEST";
+        String tempName2 = hostSide ? "GUEST" : "HOST";
+        localPlayerId = (localId == null || localId.isEmpty()) ? tempName1 : localId;
+        remotePlayerId = (remoteId == null || remoteId.isEmpty()) ? tempName2 : remoteId;
         multiplayerListener = new MultiplayerMessageListener();
         multiplayerNet.setMessageListener(multiplayerListener);
         multiplayerActive = true;
@@ -179,18 +195,20 @@ public class ChessControl {
         multiplayerListener = null;
         multiplayerConnection = null;
         multiplayerNet = null;
-    }
-
-    private void notifyRemoteGameEnd() {
-        if (multiplayerActive && multiplayerNet != null && multiplayerConnection != null) {
-            multiplayerNet.send(multiplayerConnection, Protocol.buildLeave(localPlayerId));
-        }
+        restartRequestPending = false;
     }
 
     private void notifyRemoteLeave() {
         if (multiplayerNet != null && multiplayerConnection != null) {
             multiplayerNet.send(multiplayerConnection, Protocol.buildLeave(localPlayerId));
         }
+    }
+
+    private void sendRestartAck(boolean accepted) {
+        if (multiplayerNet == null || multiplayerConnection == null) {
+            return;
+        }
+        multiplayerNet.send(multiplayerConnection, Protocol.buildRestartAck(localPlayerId, accepted));
     }
 
     private boolean isMultiplayerTurnBlocked() {
@@ -242,19 +260,51 @@ public class ChessControl {
             return;
         }
         String boardStr = parsed.get(Protocol.K_BOARD);
-        int currentTurnValue = parseInt(parsed.get(Protocol.K_CURRENT_TURN));
-        int gameStateValue = parseInt(parsed.get(Protocol.K_GAME_STATE));
+        int currentTurnValue = Integer.parseInt(parsed.get(Protocol.K_CURRENT_TURN));
+        int gameStateValue = Integer.parseInt(parsed.get(Protocol.K_GAME_STATE));
         int[][] snapshot = parseBoardSnapshot(boardStr);
         if (snapshot == null) {
             return;
         }
         SwingUtilities.invokeLater(() -> {
+            boolean wasFinished = ChessFrame.model_.getGameState() != Model.ONGOING
+                    && ChessFrame.model_.getGameState() != Model.DRAW;
             ChessFrame.model_.applyState(snapshot, currentTurnValue, gameStateValue);
             ChessFrame.chess_panel_.repaint();
-            if (ChessFrame.model_.getGameState() != Model.ONGOING && ChessFrame.model_.getGameState() != Model.DRAW) {
+            if (!wasFinished && ChessFrame.model_.getGameState() != Model.ONGOING
+                    && ChessFrame.model_.getGameState() != Model.DRAW) {
                 endGame(ChessFrame.model_.getGameState());
             }
         });
+    }
+
+    private void handleRestartRequest(Message parsed) {
+        if (!multiplayerActive) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            String opponentDisplay = (remotePlayerId == null || remotePlayerId.isEmpty()) ? "Opponent" : remotePlayerId;
+            int choice = JOptionPane.showConfirmDialog(null,
+                    opponentDisplay + " requested to restart the game. Accept?",
+                    "Restart Request",
+                    JOptionPane.YES_NO_OPTION);
+            boolean accepted = (choice == JOptionPane.YES_OPTION);
+            if (accepted) {
+                performRestartWithSync();
+            }
+            sendRestartAck(accepted);
+        });
+    }
+
+    private void handleRestartAck(Message parsed) {
+        boolean accepted = Boolean.parseBoolean(parsed.get(Protocol.K_ACCEPT));
+        restartRequestPending = false;
+        if (!accepted) {
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null,
+                    "Opponent declined the restart request."));
+            return;
+        }
+        SwingUtilities.invokeLater(this::performRestartWithSync);
     }
 
     private void handleOpponentLeave(String reason) {
@@ -287,52 +337,6 @@ public class ChessControl {
         }
     }
 
-    private class MultiplayerMessageListener implements Net.MessageListener {
-        @Override
-        public void onConnected(Connection conn) {
-            
-        }
-
-        @Override
-        public void onMessage(Connection conn, String message) {
-            Message parsed = Protocol.parse(message);
-            String type = parsed.getType();
-            if (Protocol.T_MOVE.equals(type)) {
-                int px = parseInt(parsed.get(Protocol.K_X));
-                int py = parseInt(parsed.get(Protocol.K_Y));
-                if (px >= 0 && py >= 0) {
-                    handleIncomingMove(px, py);
-                }
-            } else if (Protocol.T_SYNC.equals(type)) {
-                handleSync(parsed);
-            } else if (Protocol.T_LEAVE.equals(type)) {
-                handleOpponentLeave("Opponent left the game.");
-            }
-        }
-
-        @Override
-        public void onDisconnected(Connection conn) {
-            if (multiplayerActive) {
-                handleOpponentLeave("Connection lost.");
-            }
-        }
-
-        @Override
-        public void onError(Connection conn, Exception ex) {
-            if (multiplayerActive) {
-                handleOpponentLeave(ex == null ? "Network error" : ex.getMessage());
-            }
-        }
-    }
-
-    private int parseInt(String value) {
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
-
     public void syncBoardState() {
         sendSyncIfNeeded();
     }
@@ -360,11 +364,53 @@ public class ChessControl {
     }
 
     private int sanitizePiece(String token) {
-        int value = parseInt(token);
+        int value = Integer.parseInt(token);
         if (value != Model.BLACK && value != Model.WHITE) {
             return Model.SPACE;
         }
         return value;
+    }
+
+    private class MultiplayerMessageListener implements Net.MessageListener {
+        @Override
+        public void onConnected(Connection conn) {
+            
+        }
+
+        @Override
+        public void onMessage(Connection conn, String message) {
+            Message parsed = Protocol.parse(message);
+            String type = parsed.getType();
+            if (Protocol.T_MOVE.equals(type)) {
+                int px = Integer.parseInt(parsed.get(Protocol.K_X));
+                int py = Integer.parseInt(parsed.get(Protocol.K_Y));
+                if (px >= 0 && py >= 0) {
+                    handleIncomingMove(px, py);
+                }
+            } else if (Protocol.T_SYNC.equals(type)) {
+                handleSync(parsed);
+            } else if (Protocol.T_RESTART_REQ.equals(type)) {
+                handleRestartRequest(parsed);
+            } else if (Protocol.T_RESTART_ACK.equals(type)) {
+                handleRestartAck(parsed);
+            } else if (Protocol.T_LEAVE.equals(type)) {
+                handleOpponentLeave("Opponent left the game.");
+            }
+        }
+
+        @Override
+        public void onDisconnected(Connection conn) {
+            if (multiplayerActive) {
+                handleOpponentLeave("Connection lost.");
+            }
+        }
+
+        @Override
+        public void onError(Connection conn, Exception ex) {
+            if (multiplayerActive) {
+                handleOpponentLeave(ex == null ? "Network error" : ex.getMessage());
+            }
+        }
     }
 
 }

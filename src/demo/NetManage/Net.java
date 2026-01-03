@@ -4,7 +4,7 @@ package demo.NetManage;
  *  network prototype for server/client connections.
  * - starting a server (accepting connections)
  * - connecting as client
- * - sending messages and broadcasting
+ * - sending messages
  */
 
 import java.io.*;

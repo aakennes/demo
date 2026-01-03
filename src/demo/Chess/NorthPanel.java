@@ -11,22 +11,13 @@ import java.awt.event.*;
 
 
 public class NorthPanel extends JPanel {
-    JButton StartButton = new JButton("Start");
     JButton ExitButton = new JButton("Exit");
     JButton RestartButton = new JButton("Restart");
     
     public NorthPanel() {
         this.setLayout(new FlowLayout());
-        this.add(StartButton);
         this.add(ExitButton);
         this.add(RestartButton);
-        StartButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Start button clicked");
-                ChessFrame.control_.startGame();
-            }
-        });
         ExitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -42,7 +33,7 @@ public class NorthPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Restart button clicked");
-                ChessFrame.control_.restartGame();
+                ChessFrame.control_.requestRestart();
             }
         });
     }

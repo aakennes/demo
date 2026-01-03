@@ -69,7 +69,7 @@ public class StartPanel extends JPanel{
                 System.out.println("Single Player Start button clicked");
                 ChessFrame.control_.setGameMode(0);
                 // ChessFrame.control_.setRoomIP(SettingsFrame.settings_panel_.getDefaultIP());
-                ChessFrame.control_.startGame();
+                ChessFrame.control_.restartGame();
                 // Start.start_frame_.hideFrame();
                 Start.chess_frame_.showFrame();
             }
@@ -84,7 +84,6 @@ public class StartPanel extends JPanel{
                 // Start.start_frame_.hideFrame();
                 // show the popup anchored to the button's local coordinates (below the button)
                 multi_start_menu.show(MultiStartButton, MultiStartButton.getWidth(), 0);
-                // ChessFrame.control_.startGame();
                 // Start.chess_frame_.showFrame();
             }
         });

@@ -180,16 +180,16 @@ public class Model {
     }
 
     public String serializeBoard() {
-        StringBuilder sb = new StringBuilder(WIDTH * HEIGHT * 2);
+        StringBuilder string_builder_ = new StringBuilder(WIDTH * HEIGHT * 2);
         for (int y = 0; y < HEIGHT; y++) {
             for (int x = 0; x < WIDTH; x++) {
-                if (sb.length() > 0) {
-                    sb.append(',');
+                if (string_builder_.length() > 0) {
+                    string_builder_.append(',');
                 }
-                sb.append(ChessBoard[x][y]);
+                string_builder_.append(ChessBoard[x][y]);
             }
         }
-        return sb.toString();
+        return string_builder_.toString();
     }
 
 }

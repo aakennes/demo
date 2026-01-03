@@ -15,6 +15,8 @@ public final class Protocol {
 	public static final String T_REJECT = "REJECT";
 	public static final String T_MOVE = "MOVE";
 	public static final String T_SYNC = "SYNC";
+	public static final String T_RESTART_REQ = "RESTART_REQ";
+	public static final String T_RESTART_ACK = "RESTART_ACK";
 	public static final String T_HEARTBEAT = "HEARTBEAT";
 	public static final String T_LEAVE = "LEAVE";
 
@@ -30,6 +32,7 @@ public final class Protocol {
 	public static final String K_BOARD = "board"; // serialized board
 	public static final String K_CURRENT_TURN = "currentTurn";
 	public static final String K_GAME_STATE = "gameState";
+	public static final String K_ACCEPT = "accept";
 
 	public static String buildJoin(String name, String password) {
 		Map<String, String> m = new LinkedHashMap<>();
@@ -60,6 +63,21 @@ public final class Protocol {
 		m.put(K_X, Integer.toString(x));
 		m.put(K_Y, Integer.toString(y));
 		m.put(K_PLAYER_ID, playerId == null ? "" : playerId);
+		return pack(m);
+	}
+
+	public static String buildRestartRequest(String playerId) {
+		Map<String, String> m = new LinkedHashMap<>();
+		m.put(K_TYPE, T_RESTART_REQ);
+		m.put(K_PLAYER_ID, playerId == null ? "" : playerId);
+		return pack(m);
+	}
+
+	public static String buildRestartAck(String playerId, boolean accepted) {
+		Map<String, String> m = new LinkedHashMap<>();
+		m.put(K_TYPE, T_RESTART_ACK);
+		m.put(K_PLAYER_ID, playerId == null ? "" : playerId);
+		m.put(K_ACCEPT, Boolean.toString(accepted));
 		return pack(m);
 	}
 
@@ -111,19 +129,20 @@ public final class Protocol {
 		String cur = "key"; // switch between key and val
 		boolean escape = false;
 		for (int i = 0; i < len; ++i) {
-			char c = text.charAt(i);
+			char ch = text.charAt(i);
 			if (escape) {
-				if (cur.equals("key")) key.append(c); else val.append(c);
+				if (cur.equals("key")) key.append(ch); 
+				else val.append(ch);
 				escape = false;
 				continue;
 			}
-			if (c == '\\') { escape = true; continue; }
-			if (cur.equals("key") && c == '=') { cur = "val"; continue; }
-			if (cur.equals("val") && c == ';') {
+			if (ch == '\\') { escape = true; continue; }
+			if (cur.equals("key") && ch == '=') { cur = "val"; continue; }
+			if (cur.equals("val") && ch == ';') {
 				putParsedPair(m, key, val);
 				key.setLength(0); val.setLength(0); cur = "key"; continue;
 			}
-			if (cur.equals("key")) key.append(c); else val.append(c);
+			if (cur.equals("key")) key.append(ch); else val.append(ch);
 		}
 		if (key.length() > 0 || val.length() > 0) {
 			putParsedPair(m, key, val);

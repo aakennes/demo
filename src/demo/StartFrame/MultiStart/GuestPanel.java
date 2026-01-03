@@ -208,6 +208,31 @@ public class GuestPanel extends JPanel {
 		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
 
+	private void launchChessGame(Connection conn, String roomIp, String opponentName, int assignedColor) {
+		if (conn == null) {
+			showErrorDialog("Connection lost before game start.");
+			return;
+		}
+		String resolvedIp = roomIp;
+		if (resolvedIp == null || resolvedIp.isEmpty()) {
+			resolvedIp = Start.settings_frame_.settings_panel_.getDefaultIP();
+		}
+		String resolvedOpponent = (opponentName == null || opponentName.isEmpty()) ? resolvedIp : opponentName;
+		ChessFrame.control_.setGameMode(ChessControl.DUO);
+		ChessFrame.control_.setRoomIP(resolvedIp);
+		ChessFrame.control_.setOpponentName(resolvedOpponent);
+		String localName = (userName == null || userName.isEmpty()) ? "Guest" : userName;
+		ChessFrame.control_.startMultiplayerSession(
+				Start.net_,
+				conn,
+				false,
+				assignedColor,
+				localName,
+				resolvedOpponent);
+		ChessFrame.control_.restartGame();
+		Start.chess_frame_.showFrame();
+	}
+
 	private class GuestMessageListener implements Net.MessageListener {
 		private final String username;
 		private final String password;
@@ -300,30 +325,5 @@ public class GuestPanel extends JPanel {
 		public void onError(Connection conn, Exception ex) {
 			handleConnectionFailure(ex == null ? "Network error" : ex.getMessage());
 		}
-	}
-
-	private void launchChessGame(Connection conn, String roomIp, String opponentName, int assignedColor) {
-		if (conn == null) {
-			showErrorDialog("Connection lost before game start.");
-			return;
-		}
-		String resolvedIp = roomIp;
-		if (resolvedIp == null || resolvedIp.isEmpty()) {
-			resolvedIp = Start.settings_frame_.settings_panel_.getDefaultIP();
-		}
-		String resolvedOpponent = (opponentName == null || opponentName.isEmpty()) ? resolvedIp : opponentName;
-		ChessFrame.control_.setGameMode(ChessControl.DUO);
-		ChessFrame.control_.setRoomIP(resolvedIp);
-		ChessFrame.control_.setOpponentName(resolvedOpponent);
-		String localName = (userName == null || userName.isEmpty()) ? "Guest" : userName;
-		ChessFrame.control_.startMultiplayerSession(
-				Start.net_,
-				conn,
-				false,
-				assignedColor,
-				localName,
-				resolvedOpponent);
-		ChessFrame.control_.startGame();
-		Start.chess_frame_.showFrame();
 	}
 }

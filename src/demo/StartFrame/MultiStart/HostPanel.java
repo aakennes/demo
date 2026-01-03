@@ -259,7 +259,7 @@ public class HostPanel extends JPanel{
                 Model.BLACK,
                 hostName,
                 opponentName);
-        ChessFrame.control_.startGame();
+        ChessFrame.control_.restartGame();
         ChessFrame.control_.syncBoardState();
         Start.chess_frame_.showFrame();
     }
