@@ -7,6 +7,8 @@ package demo.StartFrame;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
 
+import demo.Apps.IconSupport;
+
 public class HistoryFrame extends JFrame {
 	public static HistoryPanel history_panel_;
 
@@ -18,6 +20,7 @@ public class HistoryFrame extends JFrame {
 		this.getContentPane().add(history_panel_, BorderLayout.CENTER);
 		this.setTitle("History");
 		this.setResizable(false);
+		IconSupport.apply(this);
 		this.setVisible(false);
 	}
 

@@ -5,13 +5,8 @@ package demo.Chess;
 */
 
 import javax.swing.*;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.io.*;
+import java.nio.file.*;
 import java.time.Instant;
 
 import demo.Start;
@@ -48,6 +43,19 @@ public class ChessControl {
     private String remotePlayerId = "GUEST";
     private volatile boolean restartRequestPending = false;
 
+    // undo snapshot state
+    private int[][] localUndoBoardSnapshot;
+    private int localUndoTurnSnapshot = Model.BLACK;
+    private int localUndoGameStateSnapshot = Model.ONGOING;
+    private boolean localUndoAvailable = false;
+
+    private int[][] remoteUndoBoardSnapshot;
+    private int remoteUndoTurnSnapshot = Model.BLACK;
+    private int remoteUndoGameStateSnapshot = Model.ONGOING;
+    private boolean remoteUndoAvailable = false;
+
+    private volatile boolean undoRequestPending = false;
+
     public ChessControl() {
         
     }
@@ -57,6 +65,8 @@ public class ChessControl {
         System.out.println("Game restarted");
         ChessFrame.model_.resetGame();
         ChessFrame.chess_panel_.repaint();
+        clearAllUndoSnapshots();
+        refreshNorthPanel();
     }
 
     private void performRestartWithSync() {
@@ -79,7 +89,6 @@ public class ChessControl {
         JOptionPane.showMessageDialog(null, "Restart request sent. Awaiting opponent confirmation.");
     }
     public void endGame(int winner) {
-        // TODO: need more end game logic to show winner
         // End Game logic : Model.setPosition -> Model.gameState = BLACKWIN/WHITEWIN
         // -> Control.endGame
         System.out.println("Game Ended");
@@ -90,13 +99,14 @@ public class ChessControl {
 		}
         writeHistoryRecord();
         // Keep the link alive so restart/exit buttons decide what happens next.
+        refreshNorthPanel();
     }
     public void exitGame() {
-        // TODO: add exit game logic
         System.out.println("Exiting game");
         Start.chess_frame_.hideFrame();
         Start.start_frame_.showFrame();
         endMultiplayerSession(true);
+        clearAllUndoSnapshots();
         if(ChessFrame.model_.getGameState() != Model.BLACKWIN && ChessFrame.model_.getGameState() != Model.WHITEWIN){
             Path historyCsvPath = Paths.get("data", "history.csv");
 
@@ -121,12 +131,43 @@ public class ChessControl {
             return;
         }
         System.out.println("Putting chess at: (" + x + ", " + y + ")");
+        boolean boardAcceptsMove = ChessFrame.model_.getGameState() == Model.ONGOING
+                || ChessFrame.model_.getGameState() == Model.DRAW;
+        if (boardAcceptsMove && ChessFrame.model_.getPosition(x, y) == Model.SPACE) {
+            captureLocalUndoSnapshot();
+        }
         ChessFrame.model_.setPosition(x, y, ChessFrame.model_.getCurrentTurn());
         ChessFrame.chess_panel_.repaint();
         sendMoveIfNeeded(x, y);
         if(ChessFrame.model_.getGameState() != Model.ONGOING && ChessFrame.model_.getGameState() != Model.DRAW) {
         	ChessFrame.control_.endGame(ChessFrame.model_.getGameState());
         }
+        refreshNorthPanel();
+    }
+
+    public void undoLastMove() {
+        if (!localUndoAvailable || localUndoBoardSnapshot == null || ChessFrame.model_ == null) {
+            JOptionPane.showMessageDialog(null, "No move available to undo.");
+            return;
+        }
+
+        boolean requiresApproval = gameMode == DUO
+                && multiplayerActive
+                && multiplayerNet != null
+                && multiplayerConnection != null;
+
+        if (requiresApproval) {
+            if (undoRequestPending) {
+                JOptionPane.showMessageDialog(null, "Waiting for opponent to respond to the previous undo request.");
+                return;
+            }
+            undoRequestPending = true;
+            multiplayerNet.send(multiplayerConnection, Protocol.buildUndoRequest(localPlayerId));
+            JOptionPane.showMessageDialog(null, "Undo request sent. Awaiting opponent confirmation.");
+            return;
+        }
+
+        applyLocalUndoSnapshot();
     }
 
     public int getGameMode(){
@@ -140,6 +181,16 @@ public class ChessControl {
 
     public void setGameMode(int mode_){
         gameMode = mode_;
+        if (mode_ == SINGLE) {
+            localColor = Model.BLACK;
+            remoteColor = Model.WHITE;
+            localPlayerId = fetchConfiguredUserName();
+            remotePlayerId = "";
+            multiplayerActive = false;
+            restartRequestPending = false;
+        }
+        clearAllUndoSnapshots();
+        refreshNorthPanel();
     }
 
     public String getRoomIP(){
@@ -156,6 +207,7 @@ public class ChessControl {
 
     public void setOpponentName(String name) {
         OpponentName = name == null ? "" : name;
+        refreshNorthPanel();
     }
 
     public synchronized void startMultiplayerSession(Net net, Connection connection, boolean hostSide, int assignedColor,
@@ -176,10 +228,16 @@ public class ChessControl {
         multiplayerListener = new MultiplayerMessageListener();
         multiplayerNet.setMessageListener(multiplayerListener);
         multiplayerActive = true;
+        restartRequestPending = false;
+        clearAllUndoSnapshots();
+        refreshNorthPanel();
     }
 
     public synchronized void endMultiplayerSession(boolean notifyRemote) {
         if (!multiplayerActive) {
+            restartRequestPending = false;
+            clearAllUndoSnapshots();
+            refreshNorthPanel();
             return;
         }
         if (notifyRemote) {
@@ -196,6 +254,8 @@ public class ChessControl {
         multiplayerConnection = null;
         multiplayerNet = null;
         restartRequestPending = false;
+        clearAllUndoSnapshots();
+        refreshNorthPanel();
     }
 
     private void notifyRemoteLeave() {
@@ -245,6 +305,9 @@ public class ChessControl {
             if (ChessFrame.model_.getGameState() != Model.ONGOING && ChessFrame.model_.getGameState() != Model.DRAW) {
                 return;
             }
+            if (ChessFrame.model_.getPosition(x, y) == Model.SPACE) {
+                captureRemoteUndoSnapshot();
+            }
             try {
                 ChessFrame.model_.setPosition(x, y, remoteColor);
                 ChessFrame.chess_panel_.repaint();
@@ -252,6 +315,7 @@ public class ChessControl {
                     endGame(ChessFrame.model_.getGameState());
                 }
             } catch (Exception ignored) {}
+            refreshNorthPanel();
         });
     }
 
@@ -267,14 +331,25 @@ public class ChessControl {
             return;
         }
         SwingUtilities.invokeLater(() -> {
+            if (ChessFrame.model_ == null) {
+                return;
+            }
+            boolean boardChanged = ChessFrame.model_ == null
+                    || !ChessFrame.model_.serializeBoard().equals(boardStr)
+                    || ChessFrame.model_.getCurrentTurn() != currentTurnValue
+                    || ChessFrame.model_.getGameState() != gameStateValue;
             boolean wasFinished = ChessFrame.model_.getGameState() != Model.ONGOING
                     && ChessFrame.model_.getGameState() != Model.DRAW;
+            if (boardChanged) {
+                clearAllUndoSnapshots();
+            }
             ChessFrame.model_.applyState(snapshot, currentTurnValue, gameStateValue);
             ChessFrame.chess_panel_.repaint();
             if (!wasFinished && ChessFrame.model_.getGameState() != Model.ONGOING
                     && ChessFrame.model_.getGameState() != Model.DRAW) {
                 endGame(ChessFrame.model_.getGameState());
             }
+            refreshNorthPanel();
         });
     }
 
@@ -305,6 +380,50 @@ public class ChessControl {
             return;
         }
         SwingUtilities.invokeLater(this::performRestartWithSync);
+    }
+
+    private void handleUndoRequest(Message parsed) {
+        if (!multiplayerActive || multiplayerNet == null || multiplayerConnection == null || parsed == null) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            if (undoRequestPending) {
+                multiplayerNet.send(multiplayerConnection, Protocol.buildUndoAck(localPlayerId, false));
+                JOptionPane.showMessageDialog(null,
+                        "Declined opponent's undo request because your previous undo request is still pending.");
+                return;
+            }
+            if (!remoteUndoAvailable || remoteUndoBoardSnapshot == null) {
+                multiplayerNet.send(multiplayerConnection, Protocol.buildUndoAck(localPlayerId, false));
+                JOptionPane.showMessageDialog(null,
+                        "Unable to honor opponent's undo request because their last move is no longer available.");
+                return;
+            }
+            String opponentDisplay = (remotePlayerId == null || remotePlayerId.isEmpty()) ? "Opponent" : remotePlayerId;
+            int choice = JOptionPane.showConfirmDialog(null,
+                    opponentDisplay + " requested to undo their last move. Accept?",
+                    "Undo Request",
+                    JOptionPane.YES_NO_OPTION);
+            boolean accepted = (choice == JOptionPane.YES_OPTION);
+            if (accepted) {
+                applyRemoteUndoSnapshot();
+            }
+            multiplayerNet.send(multiplayerConnection, Protocol.buildUndoAck(localPlayerId, accepted));
+        });
+    }
+
+    private void handleUndoAck(Message parsed) {
+        boolean accepted = parsed != null && Boolean.parseBoolean(parsed.get(Protocol.K_ACCEPT));
+        undoRequestPending = false;
+        if (!multiplayerActive) {
+            return;
+        }
+        if (!accepted) {
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null,
+                    "Opponent declined the undo request."));
+            return;
+        }
+        SwingUtilities.invokeLater(this::applyLocalUndoSnapshot);
     }
 
     private void handleOpponentLeave(String reason) {
@@ -339,6 +458,142 @@ public class ChessControl {
 
     public void syncBoardState() {
         sendSyncIfNeeded();
+    }
+    private String fetchConfiguredUserName() {
+        if (SettingsFrame.settings_panel_ != null) {
+            String configured = SettingsFrame.settings_panel_.getUsername();
+            if (configured != null && !configured.trim().isEmpty()) {
+                return configured.trim();
+            }
+        }
+        return "Player";
+    }
+
+    private String normalizeName(String value, String fallback) {
+        if (value == null) {
+            return fallback;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? fallback : trimmed;
+    }
+
+    private void refreshNorthPanel() {
+        Runnable task = () -> {
+            if (ChessFrame.north_panel_ != null) {
+                ChessFrame.north_panel_.refreshPlayerInfo();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            SwingUtilities.invokeLater(task);
+        }
+    }
+
+    private void captureLocalUndoSnapshot() {
+        if (ChessFrame.model_ == null) {
+            return;
+        }
+        localUndoBoardSnapshot = ChessFrame.model_.snapshotBoard();
+        localUndoTurnSnapshot = ChessFrame.model_.getCurrentTurn();
+        localUndoGameStateSnapshot = ChessFrame.model_.getGameState();
+        localUndoAvailable = true;
+    }
+
+    private void captureRemoteUndoSnapshot() {
+        if (ChessFrame.model_ == null) {
+            return;
+        }
+        remoteUndoBoardSnapshot = ChessFrame.model_.snapshotBoard();
+        remoteUndoTurnSnapshot = ChessFrame.model_.getCurrentTurn();
+        remoteUndoGameStateSnapshot = ChessFrame.model_.getGameState();
+        remoteUndoAvailable = true;
+    }
+
+    private void applyLocalUndoSnapshot() {
+        Runnable task = () -> {
+            if (!localUndoAvailable || localUndoBoardSnapshot == null || ChessFrame.model_ == null) {
+                return;
+            }
+            ChessFrame.model_.applyState(localUndoBoardSnapshot, localUndoTurnSnapshot, localUndoGameStateSnapshot);
+            ChessFrame.chess_panel_.repaint();
+            clearAllUndoSnapshots();
+            refreshNorthPanel();
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            SwingUtilities.invokeLater(task);
+        }
+    }
+
+    private void applyRemoteUndoSnapshot() {
+        Runnable task = () -> {
+            if (!remoteUndoAvailable || remoteUndoBoardSnapshot == null || ChessFrame.model_ == null) {
+                return;
+            }
+            ChessFrame.model_.applyState(remoteUndoBoardSnapshot, remoteUndoTurnSnapshot, remoteUndoGameStateSnapshot);
+            ChessFrame.chess_panel_.repaint();
+            clearAllUndoSnapshots();
+            refreshNorthPanel();
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            SwingUtilities.invokeLater(task);
+        }
+    }
+
+    private void clearAllUndoSnapshots() {
+        localUndoBoardSnapshot = null;
+        localUndoAvailable = false;
+        localUndoTurnSnapshot = Model.BLACK;
+        localUndoGameStateSnapshot = Model.ONGOING;
+
+        remoteUndoBoardSnapshot = null;
+        remoteUndoAvailable = false;
+        remoteUndoTurnSnapshot = Model.BLACK;
+        remoteUndoGameStateSnapshot = Model.ONGOING;
+
+        undoRequestPending = false;
+    }
+
+    public String getLocalPlayerName() {
+        return normalizeName(localPlayerId, fetchConfiguredUserName());
+    }
+
+    public String getRemotePlayerName() {
+        if (gameMode != DUO) {
+            return "";
+        }
+        String fallback = multiplayerActive ? "Opponent" : "Waiting...";
+        return normalizeName(remotePlayerId, fallback);
+    }
+
+    public int getLocalPieceColor() {
+        return localColor;
+    }
+
+    public int getRemotePieceColor() {
+        return remoteColor;
+    }
+
+    public boolean shouldShowRemoteInfo() {
+        return gameMode == DUO;
+    }
+
+    public boolean isLocalTurn() {
+        if (ChessFrame.model_ == null) {
+            return false;
+        }
+        return ChessFrame.model_.getCurrentTurn() == localColor;
+    }
+
+    public boolean isRemoteTurn() {
+        if (ChessFrame.model_ == null) {
+            return false;
+        }
+        return ChessFrame.model_.getCurrentTurn() == remoteColor;
     }
 
     private int[][] parseBoardSnapshot(String boardStr) {
@@ -393,6 +648,10 @@ public class ChessControl {
                 handleRestartRequest(parsed);
             } else if (Protocol.T_RESTART_ACK.equals(type)) {
                 handleRestartAck(parsed);
+            } else if (Protocol.T_UNDO_REQ.equals(type)) {
+                handleUndoRequest(parsed);
+            } else if (Protocol.T_UNDO_ACK.equals(type)) {
+                handleUndoAck(parsed);
             } else if (Protocol.T_LEAVE.equals(type)) {
                 handleOpponentLeave("Opponent left the game.");
             }

@@ -44,6 +44,14 @@ public class ColorDefine {
     public static final String PURPLE_STR   = "Purple";
     public static final String UNDEFINED_STR = "Undefined";
 
+    public static final Color PANEL_BG = GREY_COLOR;
+    public static final Color CARD_BG = new Color(34, 37, 54);
+    public static final Color CHESS_TEXT_PRIMARY = new Color(245, 245, 245);
+    public static final Color CHESS_TEXT_SECONDARY = new Color(175, 179, 194);
+    public static final Color CHESS_ACCENT_COLOR = new Color(255, 181, 72);
+    public static final Color CHESS_BUTTON_BG = new Color(62, 66, 90);
+    public static final Color CHESS_BUTTON_EXIT_BG = new Color(199, 80, 78);
+
     public static int colorStrToNo(String str){
         switch (str) {
             // {"Blue", "Green", "Yellow", "Red", "Grey", "Black", "Purple"}
@@ -88,5 +96,26 @@ public class ColorDefine {
                 break;
         }
         return UNDEFINED_STR;
+    }
+
+    public static Color colorNoToColor(int no_) {
+        switch (no_) {
+            case BLUE:
+                return BLUE_COLOR;
+            case GREEN:
+                return GREEN_COLOR;
+            case YELLOW:
+                return YELLOW_COLOR;
+            case RED:
+                return RED_COLOR;
+            case GREY:
+                return GREY_COLOR;
+            case BLACK:
+                return BLACK_COLOR;
+            case PURPLE:
+                return PURPLE_COLOR;
+            default:
+                return UNDEFINED_COLOR;
+        }
     }
 }

@@ -17,6 +17,8 @@ public final class Protocol {
 	public static final String T_SYNC = "SYNC";
 	public static final String T_RESTART_REQ = "RESTART_REQ";
 	public static final String T_RESTART_ACK = "RESTART_ACK";
+	public static final String T_UNDO_REQ = "UNDO_REQ";
+	public static final String T_UNDO_ACK = "UNDO_ACK";
 	public static final String T_HEARTBEAT = "HEARTBEAT";
 	public static final String T_LEAVE = "LEAVE";
 
@@ -76,6 +78,21 @@ public final class Protocol {
 	public static String buildRestartAck(String playerId, boolean accepted) {
 		Map<String, String> m = new LinkedHashMap<>();
 		m.put(K_TYPE, T_RESTART_ACK);
+		m.put(K_PLAYER_ID, playerId == null ? "" : playerId);
+		m.put(K_ACCEPT, Boolean.toString(accepted));
+		return pack(m);
+	}
+
+	public static String buildUndoRequest(String playerId) {
+		Map<String, String> m = new LinkedHashMap<>();
+		m.put(K_TYPE, T_UNDO_REQ);
+		m.put(K_PLAYER_ID, playerId == null ? "" : playerId);
+		return pack(m);
+	}
+
+	public static String buildUndoAck(String playerId, boolean accepted) {
+		Map<String, String> m = new LinkedHashMap<>();
+		m.put(K_TYPE, T_UNDO_ACK);
 		m.put(K_PLAYER_ID, playerId == null ? "" : playerId);
 		m.put(K_ACCEPT, Boolean.toString(accepted));
 		return pack(m);

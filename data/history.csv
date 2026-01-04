@@ -1,23 +1,75 @@
 GameMode,RoomIP,OpponentName,MyColor,WinColor,Time
 Single,127.0.0.1,"",Black,Black,2025-12-31T22:05:46.118031900Z
 Single,127.0.0.1,"",Black,Black,2025-12-31T22:05:55.121797800Z
-Single,127.0.0.1,"",Black,"Unfinished",2026-01-02T00:59:55.707402300Z
-Single,127.0.0.1,"",Black,"Unfinished",2026-01-02T01:00:38.337382700Z
-Single,123123,"",Black,"Unfinished",2026-01-02T01:45:53.168351700Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-02T21:13:19.929302600Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-02T21:13:20.773485100Z
-Single,127.0.0.1,"",Black,Black,2026-01-02T21:26:05.862452200Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-02T21:26:44.123608Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-02T21:26:45.652851Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-02T21:28:50.099776400Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-02T21:28:52.131380800Z
-Duo,127.0.0.1,"Li Hua",White,White,2026-01-02T21:37:06.607206200Z
-Duo,127.0.0.1,"Li Hua",Black,White,2026-01-02T21:37:09.789693300Z
-Duo,127.0.0.1,"Li Hua",Black,White,2026-01-02T21:37:10.304866400Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-02T21:37:18.248094400Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-02T21:37:18.861331800Z
 Duo,10.130.124.58,"Li Hua",Black,Black,2026-01-03T16:08:13.740148100Z
 Duo,10.130.124.58,"Li Hua",Black,Black,2026-01-03T16:37:05.397132700Z
 Duo,127.0.0.1,"Li Hua",White,Black,2026-01-03T16:37:06.046655300Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T16:37:11.472566Z
-Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T16:37:14.212851Z
+Single,127.0.0.1,"",Black,Black,2026-01-03T16:50:02.718838100Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T16:50:16.566056700Z
+Duo,10.130.124.58,"Li Hua",Black,Black,2026-01-03T16:50:47.537660100Z
+Duo,127.0.0.1,"Li Hua",White,Black,2026-01-03T16:50:48.737216300Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T16:51:12.433912800Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T16:51:27.013862600Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T16:57:02.685988200Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T16:57:20.447817900Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T16:59:59.767122500Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:00:32.723577300Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:00:49.595794900Z
+Single,127.0.0.1,"",Black,White,2026-01-03T17:02:23.275337900Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:02:38.383901800Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:02:54.942038200Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:03:05.410559200Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:04:04.953654800Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:04:20.607835100Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:04:23.507135300Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:07:14.010197700Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:22:46.647798400Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:23:19.843399500Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:23:23.725016700Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:23:55.882248100Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:25:50.636855800Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:26:35.236754100Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:26:59.861020900Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:27:11.480873700Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T17:30:38.200203700Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T19:23:25.794647800Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-03T19:24:20.619664800Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T19:24:54.022219500Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-03T19:24:56.473381100Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:49:22.928832900Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:49:31.415296Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:50:03.631000600Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:52:21.427272300Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:56:23.906015800Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:57:06.375784400Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:57:12.076234300Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:59:10.936658600Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T08:59:16.634800600Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:04:47.812315300Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:05:13.552710300Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:05:17.869100100Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:17:44.142487800Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:17:46.931758800Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:21:10.969889800Z
+Duo,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:21:14.007369300Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:32:01.779180100Z
+Single,34567,"",Black,"Unfinished",2026-01-04T09:35:22.350153800Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:36:12.774663200Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:36:18.716374300Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:38:58.969896900Z
+Single,127.0.0.1,"",Black,"Unfinished",2026-01-04T09:39:00.508035900Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:39:11.459216400Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:46:00.474966100Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:46:08.201028700Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:48:31.392934100Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:51:00.440064400Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:51:07.105914600Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:51:09.020126200Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:51:17.608789700Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:52:03.792717400Z
+Single,34557,"",Black,Black,2026-01-04T09:55:26.410727100Z
+Single,34557,"",Black,"Unfinished",2026-01-04T09:55:32.834834Z
+Duo,127.0.0.1,"Li Hua",Black,Black,2026-01-04T09:56:36.468638700Z
+Duo,127.0.0.1,"Li Hua",White,Black,2026-01-04T09:56:37.618576600Z
+Duo,34557,"",Black,"Unfinished",2026-01-04T09:56:42.937428400Z
+Duo,34557,"",Black,"Unfinished",2026-01-04T09:56:45.695981900Z

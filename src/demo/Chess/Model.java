@@ -192,4 +192,14 @@ public class Model {
         return string_builder_.toString();
     }
 
+    public int[][] snapshotBoard() {
+        int[][] copy = new int[WIDTH][HEIGHT];
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                copy[x][y] = ChessBoard[x][y];
+            }
+        }
+        return copy;
+    }
+
 }

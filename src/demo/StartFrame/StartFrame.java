@@ -7,6 +7,7 @@ package demo.StartFrame;
 
 import javax.swing.JFrame;
 
+import demo.Apps.IconSupport;
 import demo.Chess.ChessFrame;
 
 import java.awt.BorderLayout;
@@ -22,6 +23,7 @@ public class StartFrame extends JFrame {
 		this.setTitle("Menu");
 		this.setResizable(false);
 		this.setVisible(true);
+		IconSupport.apply(this);
     }
 
     public void showFrame() {

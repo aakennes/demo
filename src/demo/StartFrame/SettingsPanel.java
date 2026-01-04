@@ -143,7 +143,7 @@ public class SettingsPanel extends JPanel{
                         bw.write(escapeCsv(color) + "," + escapeCsv(username) + "," + escapeCsv(ip));
                         bw.newLine();
                     }
-                    JOptionPane.showMessageDialog(SettingsPanel.this, "Settings saved.", "Saved", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(SettingsPanel.this, "Settings saved, restart game to show changes", "Saved", JOptionPane.INFORMATION_MESSAGE);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -204,5 +204,9 @@ public class SettingsPanel extends JPanel{
     
     public String getDefaultIP() {
         return localIP;
+    }
+
+    public Color getProfileColorSwatch() {
+        return colorNoToColor(profileColor);
     }
 }

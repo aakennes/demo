@@ -15,10 +15,14 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static demo.Apps.ColorDefine.*;
+import static demo.Apps.StringEscape.*;
 
 public class HostPanel extends JPanel{
     private static final int LABEL_WIDTH    = 150;
@@ -77,7 +81,35 @@ public class HostPanel extends JPanel{
         } catch (UnknownHostException e) {
             IPTextField.setText("127.0.0.1");
         }
-        PortTextField.setText("34567");
+        PortTextField.setText(resolveDefaultPort());
+    }
+
+    private String resolveDefaultPort() {
+        Path settingsPath = Paths.get("data", "settings.csv");
+        if (!Files.exists(settingsPath)) {
+            System.out.println("Settings file not found, using default port 34567");
+            return "34567";
+        }
+        try (BufferedReader br = Files.newBufferedReader(settingsPath)) {
+            br.readLine();
+            String line = br.readLine();
+            if (line != null) {
+                List<String> fields = parseCsvLine(line);
+                if (fields.size() >= 3) {
+                    String candidate = unescapeCsvField(fields.get(2));
+                    if (candidate != null) {
+                        candidate = candidate.trim();
+                        if (!candidate.isEmpty()) {
+                            return candidate;
+                        }
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        System.out.println("Using default port 34567");
+        return "34567";
     }
 
     private void RoomIPSetting() {
